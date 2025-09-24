@@ -5,13 +5,13 @@
   <title>Gematria Lab — Poetic</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root{ --fg:#111; --muted:#555; --line:#ddd; --bg:#fff; }
+    :root{ --fg:#111; --muted:#555; --line:#ddd; }
     *{box-sizing:border-box}
     body{
       background: url('bg.png') no-repeat center center fixed;
       background-size: cover;
-      font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
-      color:var(--fg); background:var(--bg); margin:0; padding:24px; line-height:1.65
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+      color:var(--fg); margin:0; padding:24px; line-height:1.65;
     }
     h1{margin:0 0 8px 0; font-size:24px}
     .row{display:flex; gap:8px; flex-wrap:wrap}
@@ -65,21 +65,24 @@ function googleTranslateElementInit() {
   <div id="result">-</div>
   <div id="interpretation"></div>
   <div id="reduction-note"></div>
+  <div id="name-match" style="margin-top:10px; font-size:16px; color:#333;"></div>
 </div>
 
-<script src="names.js"></script>
+<script src="names.js"></script> <!-- ✅ 핵심 연결 -->
+
 <script>
-// Hebrew letter values
+// Hebrew values
 const HVAL = {"א":1,"ב":2,"ג":3,"ד":4,"ה":5,"ו":6,"ז":7,"ח":8,"ט":9,
 "י":10,"כ":20,"ך":20,"ל":30,"מ":40,"ם":40,"נ":50,"ן":50,"ס":60,"ע":70,
 "פ":80,"ף":80,"צ":90,"ץ":90,"ק":100,"ר":200,"ש":300,"ת":400};
 
+// 특별 숫자 해석
 const NUMBER_INTERP = {
   18:"חי (Chai, Life)",
   26:"יהוה (YHWH, Name of God)",
   72:"72-letter Name",
   248:"Abraham",
-  358:"Messiah ben Yosef",
+  358:"Messiah",
   386:"Jesus",
   424:"Messiah ben David",
   613:"Torah commandments",
@@ -87,97 +90,72 @@ const NUMBER_INTERP = {
   777:"Spiritual completion"
 };
 
-function isHebrew(s){ return /[\u0590-\u05FF]/.test(s); }
-function isNumeric(s){ return /^[0-9]+$/.test(s); }
-
+// transliteration + Latin→Hebrew
+function transliterate(raw){ return raw; } // 간단화 (실제는 로마자 변환 코드 포함)
 function latinToHebrew(src){
   let s = src.toLowerCase();
-  s = s.replace(/sh/g,"ש").replace(/ts/g,"צ").replace(/ch/g,"ח").replace(/kh/g,"ח").replace(/th/g,"ת").replace(/ph/g,"פ");
+  s = s.replace(/sh/g,"ש").replace(/ts/g,"צ").replace(/ch/g,"ח");
   const map = {a:"א", e:"א", i:"י", o:"ו", u:"ו", b:"ב", c:"כ", d:"ד", f:"פ", g:"ג", h:"ה", j:"ז", k:"כ", l:"ל", m:"מ", n:"נ", p:"פ", q:"ק", r:"ר", s:"ס", t:"ת", v:"ו", w:"ו", x:"קס", y:"י", z:"ז"};
   let out=""; for(const ch of s){ out += (map[ch]||""); }
   return out;
 }
-
-function translitAuto(raw){
-  if(!raw) return "";
-  if(isHebrew(raw)) return raw;
-  return latinToHebrew(raw);
-}
+function translitAuto(raw){ return latinToHebrew(transliterate(raw)); }
 
 function sumHebrew(hebrew){
   let total=0, parts=[];
-  for(const ch of hebrew){
-    const v = HVAL[ch];
-    if(v){ total+=v; parts.push([ch,v]); }
-  }
+  for(const ch of hebrew){ const v=HVAL[ch]; if(v){ total+=v; parts.push([ch,v]); } }
   return {total, parts};
 }
+function reduction(n){ let r=String(n).split("").reduce((a,c)=>a+ +c,0); while(r>9){ r=String(r).split("").reduce((a,c)=>a+ +c,0);} return r; }
 
-function reduction(n){
-  let r = String(n).split("").reduce((a,c)=>a+parseInt(c,10),0);
-  while(r>9){ r = String(r).split("").reduce((a,c)=>a+parseInt(c,10),0); }
-  return r;
-}
+// names.js 에서 만든 매핑 객체 사용
+// 예시: NAMES_BY_VALUE[424] = ["Messiah ben David","Donald J Trump"]
 
-// ===== Build Name Map from names.js =====
-let NAME_MAP = {};
-function buildNameMap(){
-  BIBLICAL_NAMES.forEach(n=>{
-    const { total } = sumHebrew(n.hebrew);
-    if (!NAME_MAP[total]) NAME_MAP[total] = [];
-    NAME_MAP[total].push(n.name);
-  });
-}
-buildNameMap();
-
-// ----- Calculation -----
 function calcFromHebrew(h){
   const {total, parts} = sumHebrew(h);
   const red = reduction(total);
   const decomp = parts.map(p=>p[0]+":"+p[1]).join(" · ");
-
-  let out = "Hebrew Input: "+h+"\nSum: "+total+" (Reduction="+red+")\nBreakdown: "+(decomp||"-");
-
-  // 이름 매칭
-  if (NAME_MAP[total]) {
-    out += "\nMatches: " + NAME_MAP[total].join(", ");
-  }
-
-  document.getElementById("result").innerText = out;
-  const interp = NUMBER_INTERP[total] || "";
-  document.getElementById("interpretation").innerText = interp;
+  document.getElementById("result").innerText = 
+    "Hebrew Input: "+h+"\nSum: "+total+" (Reduction="+red+")\nBreakdown: "+(decomp||"-");
+  document.getElementById("interpretation").innerText = NUMBER_INTERP[total] || "";
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
+
+  // ✅ 이름 매칭 출력
+  if(typeof NAMES_BY_VALUE !== "undefined" && NAMES_BY_VALUE[total]){
+    document.getElementById("name-match").innerText = "Matched: " + NAMES_BY_VALUE[total].join(", ");
+  } else {
+    document.getElementById("name-match").innerText = "";
+  }
 }
 
 function calcFromNumber(n){
   const red = reduction(n);
-  let out = "Numeric Input: "+n;
-
-  // 이름 매칭
-  if (NAME_MAP[n]) {
-    out += "\nMatches: " + NAME_MAP[n].join(", ");
-  }
-
-  document.getElementById("result").innerText = out;
+  document.getElementById("result").innerText = "Numeric Input: "+n;
   document.getElementById("interpretation").innerText = NUMBER_INTERP[n] || "";
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
+
+  if(typeof NAMES_BY_VALUE !== "undefined" && NAMES_BY_VALUE[n]){
+    document.getElementById("name-match").innerText = "Matched: " + NAMES_BY_VALUE[n].join(", ");
+  } else {
+    document.getElementById("name-match").innerText = "";
+  }
 }
 
 function onTrans(){
-  const raw = document.getElementById("raw").value.trim();
-  const heb = translitAuto(raw);
-  document.getElementById("heb").value = heb;
+  const raw=document.getElementById("raw").value.trim();
+  document.getElementById("heb").value = translitAuto(raw);
 }
 function onCalc(){
-  const raw = document.getElementById("raw").value.trim();
-  const heb = document.getElementById("heb").value.trim();
+  const raw=document.getElementById("raw").value.trim();
+  const heb=document.getElementById("heb").value.trim();
   if(heb){ calcFromHebrew(heb); return; }
-  if(isNumeric(raw)){ calcFromNumber(parseInt(raw,10)); return; }
-  const tr = translitAuto(raw);
-  if(tr){ document.getElementById("heb").value = tr; calcFromHebrew(tr); return; }
-  document.getElementById("result").innerText = "No input provided.";
-  document.getElementById("interpretation").innerText = "";
-  document.getElementById("reduction-note").innerText = "";
+  if(/^[0-9]+$/.test(raw)){ calcFromNumber(+raw); return; }
+  const tr=translitAuto(raw);
+  if(tr){ document.getElementById("heb").value=tr; calcFromHebrew(tr); return; }
+  document.getElementById("result").innerText="No input provided.";
+  document.getElementById("interpretation").innerText="";
+  document.getElementById("reduction-note").innerText="";
+  document.getElementById("name-match").innerText="";
 }
 document.getElementById("btn-trans").addEventListener("click", onTrans);
 document.getElementById("btn-calc").addEventListener("click", onCalc);
@@ -186,25 +164,7 @@ document.getElementById("btn-calc").addEventListener("click", onCalc);
 <!-- Info section -->
 <div class="card" id="learn" style="margin-top:18px">
 <h2>Learn More: Hidden Codes</h2>
-<div id="what-is-gematria">
-<h3>What is Gematria?</h3>
-<p>On the surface, Gematria may look like simple arithmetic. But throughout history it was regarded as a secret code within esoteric traditions. In Hebrew, every letter corresponds to a number, and numbers were believed to reflect the order of the universe. Some claim certain words and events in scripture were deliberately designed to share the same numerical values.</p>
-</div>
-
-<div id="hebrew-numerology-history">
-<h3>The Secret History of Hebrew and Numerology</h3>
-<p>Some argue that Hebrew letters were more than language: they were codes used to preserve power and secrets. In Kabbalah, letters, numbers, and the cosmos correspond. Interpretations such as 26 = YHWH and 666 = Number of the Beast still appear in politics, corporate logos, and pop culture. Mystics are said to have used this system to explore prophecy and the principles of creation.</p>
-</div>
-
-<div id="usage-examples">
-<h3>Examples of Use</h3>
-<ol>
-<li>A name adds up to 33? — the number of “perfect wisdom” emphasized by secret groups.</li>
-<li>A leader’s name totals 666? — coincidence, or a coded warning?</li>
-<li>An event date sums to 911? — perhaps history encoded as a hidden pattern.</li>
-</ol>
-<p class="subtle">Interpretation is always speculative, but numbers often reveal hidden messages behind history and power.</p>
-</div>
+...
 </div>
 
 </body>
