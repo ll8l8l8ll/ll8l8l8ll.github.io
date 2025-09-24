@@ -4,16 +4,14 @@
   <meta charset="UTF-8">
   <title>Gematria Lab — Poetic</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1489319400638670"
-     crossorigin="anonymous"></script>
   <style>
-    :root{ --fg:#111; --muted:#555; --line:#ddd; }
+    :root{ --fg:#111; --muted:#555; --line:#ddd; --bg:#fff; }
     *{box-sizing:border-box}
     body{
-      background: url('bg.png') no-repeat center center fixed !important;
-      background-size: cover !important;
+      background: url('bg.png') no-repeat center center fixed;
+      background-size: cover;
       font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
-      color:var(--fg); margin:0; padding:24px; line-height:1.65;
+      color:var(--fg); background:var(--bg); margin:0; padding:24px; line-height:1.65
     }
     h1{margin:0 0 8px 0; font-size:24px}
     .row{display:flex; gap:8px; flex-wrap:wrap}
@@ -69,6 +67,9 @@ function googleTranslateElementInit() {
   <div id="reduction-note"></div>
 </div>
 
+<!-- Bring in names.js -->
+<script src="names.js"></script>
+
 <script>
 // Hebrew letter values
 const HVAL = {"א":1,"ב":2,"ג":3,"ד":4,"ה":5,"ו":6,"ז":7,"ח":8,"ט":9,
@@ -82,6 +83,7 @@ const NUMBER_INTERP = {
   248:"Abraham",
   358:"Messiah",
   386:"Jesus",
+  424:"Messiah son of David",
   613:"Torah commandments",
   666:"Number of the Beast",
   777:"Spiritual completion"
@@ -104,6 +106,14 @@ function translitAuto(raw){
   return latinToHebrew(raw);
 }
 
+// resolveHebrew: check dictionary first
+function resolveHebrew(input) {
+  if (typeof BIBLICAL_NAMES !== "undefined" && BIBLICAL_NAMES[input]) {
+    return BIBLICAL_NAMES[input];
+  }
+  return translitAuto(input);
+}
+
 function sumHebrew(hebrew){
   let total=0, parts=[];
   for(const ch of hebrew){
@@ -123,7 +133,7 @@ function calcFromHebrew(h){
   const {total, parts} = sumHebrew(h);
   const red = reduction(total);
   const decomp = parts.map(p=>p[0]+":"+p[1]).join(" · ");
-  let out = "Hebrew Input: "+h+"\nSum: "+total+" (Reduction="+red+")\nBreakdown: "+(decomp||"-");
+  let out = "Hebrew Input: "+h+"\\nSum: "+total+" (Reduction="+red+")\\nBreakdown: "+(decomp||"-");
   document.getElementById("result").innerText = out;
   document.getElementById("interpretation").innerText = NUMBER_INTERP[total] || "";
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
@@ -139,7 +149,7 @@ function calcFromNumber(n){
 
 function onTrans(){
   const raw = document.getElementById("raw").value.trim();
-  const heb = translitAuto(raw);
+  const heb = resolveHebrew(raw);
   document.getElementById("heb").value = heb;
 }
 function onCalc(){
@@ -147,7 +157,7 @@ function onCalc(){
   const heb = document.getElementById("heb").value.trim();
   if(heb){ calcFromHebrew(heb); return; }
   if(isNumeric(raw)){ calcFromNumber(parseInt(raw,10)); return; }
-  const tr = translitAuto(raw);
+  const tr = resolveHebrew(raw);
   if(tr){ document.getElementById("heb").value = tr; calcFromHebrew(tr); return; }
   document.getElementById("result").innerText = "No input provided.";
   document.getElementById("interpretation").innerText = "";
