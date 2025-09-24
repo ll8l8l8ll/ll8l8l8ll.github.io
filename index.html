@@ -67,9 +67,7 @@ function googleTranslateElementInit() {
   <div id="reduction-note"></div>
 </div>
 
-<!-- Bring in names.js -->
 <script src="names.js"></script>
-
 <script>
 // Hebrew letter values
 const HVAL = {"א":1,"ב":2,"ג":3,"ד":4,"ה":5,"ו":6,"ז":7,"ח":8,"ט":9,
@@ -83,7 +81,6 @@ const NUMBER_INTERP = {
   248:"Abraham",
   358:"Messiah",
   386:"Jesus",
-  424:"Messiah son of David",
   613:"Torah commandments",
   666:"Number of the Beast",
   777:"Spiritual completion"
@@ -106,14 +103,6 @@ function translitAuto(raw){
   return latinToHebrew(raw);
 }
 
-// resolveHebrew: check dictionary first
-function resolveHebrew(input) {
-  if (typeof BIBLICAL_NAMES !== "undefined" && BIBLICAL_NAMES[input]) {
-    return BIBLICAL_NAMES[input];
-  }
-  return translitAuto(input);
-}
-
 function sumHebrew(hebrew){
   let total=0, parts=[];
   for(const ch of hebrew){
@@ -133,7 +122,7 @@ function calcFromHebrew(h){
   const {total, parts} = sumHebrew(h);
   const red = reduction(total);
   const decomp = parts.map(p=>p[0]+":"+p[1]).join(" · ");
-  let out = "Hebrew Input: "+h+"\\nSum: "+total+" (Reduction="+red+")\\nBreakdown: "+(decomp||"-");
+  let out = "Hebrew Input: "+h+"\nSum: "+total+" (Reduction="+red+")\nBreakdown: "+(decomp||"-");
   document.getElementById("result").innerText = out;
   document.getElementById("interpretation").innerText = NUMBER_INTERP[total] || "";
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
@@ -149,7 +138,7 @@ function calcFromNumber(n){
 
 function onTrans(){
   const raw = document.getElementById("raw").value.trim();
-  const heb = resolveHebrew(raw);
+  const heb = translitAuto(raw);
   document.getElementById("heb").value = heb;
 }
 function onCalc(){
@@ -157,7 +146,7 @@ function onCalc(){
   const heb = document.getElementById("heb").value.trim();
   if(heb){ calcFromHebrew(heb); return; }
   if(isNumeric(raw)){ calcFromNumber(parseInt(raw,10)); return; }
-  const tr = resolveHebrew(raw);
+  const tr = translitAuto(raw);
   if(tr){ document.getElementById("heb").value = tr; calcFromHebrew(tr); return; }
   document.getElementById("result").innerText = "No input provided.";
   document.getElementById("interpretation").innerText = "";
@@ -190,8 +179,6 @@ document.getElementById("btn-calc").addEventListener("click", onCalc);
 <p class="subtle">Interpretation is always speculative, but numbers often reveal hidden messages behind history and power.</p>
 </div>
 </div>
-<script src="names.js"></script>
 
-  
 </body>
 </html>
