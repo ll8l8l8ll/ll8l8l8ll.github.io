@@ -79,8 +79,9 @@ const NUMBER_INTERP = {
   26:"יהוה (YHWH, Name of God)",
   72:"72-letter Name",
   248:"Abraham",
-  358:"Messiah",
+  358:"Messiah ben Yosef",
   386:"Jesus",
+  424:"Messiah ben David",
   613:"Torah commandments",
   666:"Number of the Beast",
   777:"Spiritual completion"
@@ -118,19 +119,45 @@ function reduction(n){
   return r;
 }
 
+// ===== Build Name Map from names.js =====
+let NAME_MAP = {};
+function buildNameMap(){
+  BIBLICAL_NAMES.forEach(n=>{
+    const { total } = sumHebrew(n.hebrew);
+    if (!NAME_MAP[total]) NAME_MAP[total] = [];
+    NAME_MAP[total].push(n.name);
+  });
+}
+buildNameMap();
+
+// ----- Calculation -----
 function calcFromHebrew(h){
   const {total, parts} = sumHebrew(h);
   const red = reduction(total);
   const decomp = parts.map(p=>p[0]+":"+p[1]).join(" · ");
+
   let out = "Hebrew Input: "+h+"\nSum: "+total+" (Reduction="+red+")\nBreakdown: "+(decomp||"-");
+
+  // 이름 매칭
+  if (NAME_MAP[total]) {
+    out += "\nMatches: " + NAME_MAP[total].join(", ");
+  }
+
   document.getElementById("result").innerText = out;
-  document.getElementById("interpretation").innerText = NUMBER_INTERP[total] || "";
+  const interp = NUMBER_INTERP[total] || "";
+  document.getElementById("interpretation").innerText = interp;
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
 }
 
 function calcFromNumber(n){
   const red = reduction(n);
   let out = "Numeric Input: "+n;
+
+  // 이름 매칭
+  if (NAME_MAP[n]) {
+    out += "\nMatches: " + NAME_MAP[n].join(", ");
+  }
+
   document.getElementById("result").innerText = out;
   document.getElementById("interpretation").innerText = NUMBER_INTERP[n] || "";
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
