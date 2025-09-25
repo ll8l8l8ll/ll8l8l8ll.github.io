@@ -11,7 +11,7 @@
       background: url('bg.png') no-repeat center center fixed;
       background-size: cover;
       font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
-      color:var(--fg); background:var(--bg); margin:0; padding:24px; line-height:1.65
+      color:var(--fg); margin:0; padding:24px; line-height:1.65;
     }
     h1{margin:0 0 8px 0; font-size:24px}
     .row{display:flex; gap:8px; flex-wrap:wrap}
@@ -28,7 +28,6 @@
 </head>
 <body>
 
-<!-- Google Translate widget -->
 <div id="google_translate_element" style="margin-bottom:12px;"></div>
 <script type="text/javascript">
 function googleTranslateElementInit() {
@@ -67,12 +66,7 @@ function googleTranslateElementInit() {
   <div id="reduction-note"></div>
 </div>
 
-<!-- load names and extra functions -->
-<script src="names.js"></script>
-<script src="extra.js"></script>
-
 <script>
-// Hebrew letter values
 const HVAL = {"א":1,"ב":2,"ג":3,"ד":4,"ה":5,"ו":6,"ז":7,"ח":8,"ט":9,
 "י":10,"כ":20,"ך":20,"ל":30,"מ":40,"ם":40,"נ":50,"ן":50,"ס":60,"ע":70,
 "פ":80,"ף":80,"צ":90,"ץ":90,"ק":100,"ר":200,"ש":300,"ת":400};
@@ -103,10 +97,6 @@ function latinToHebrew(src){
 function translitAuto(raw){
   if(!raw) return "";
   if(isHebrew(raw)) return raw;
-  // fallback: use extra.js function if available
-  if(typeof toHebrewUniversal === "function"){
-    return toHebrewUniversal(raw);
-  }
   return latinToHebrew(raw);
 }
 
@@ -131,12 +121,7 @@ function calcFromHebrew(h){
   const decomp = parts.map(p=>p[0]+":"+p[1]).join(" · ");
   let out = "Hebrew Input: "+h+"\nSum: "+total+" (Reduction="+red+")\nBreakdown: "+(decomp||"-");
   document.getElementById("result").innerText = out;
-  // show from NUMBER_INTERP or names.js
-  if(window.BIBLE_NAMES && window.BIBLE_NAMES[total]){
-    document.getElementById("interpretation").innerText = window.BIBLE_NAMES[total].join(", ");
-  } else {
-    document.getElementById("interpretation").innerText = NUMBER_INTERP[total] || "";
-  }
+  document.getElementById("interpretation").innerText = NUMBER_INTERP[total] || "";
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
 }
 
@@ -144,11 +129,7 @@ function calcFromNumber(n){
   const red = reduction(n);
   let out = "Numeric Input: "+n;
   document.getElementById("result").innerText = out;
-  if(window.BIBLE_NAMES && window.BIBLE_NAMES[n]){
-    document.getElementById("interpretation").innerText = window.BIBLE_NAMES[n].join(", ");
-  } else {
-    document.getElementById("interpretation").innerText = NUMBER_INTERP[n] || "";
-  }
+  document.getElementById("interpretation").innerText = NUMBER_INTERP[n] || "";
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
 }
 
@@ -172,7 +153,6 @@ document.getElementById("btn-trans").addEventListener("click", onTrans);
 document.getElementById("btn-calc").addEventListener("click", onCalc);
 </script>
 
-<!-- Info section -->
 <div class="card" id="learn" style="margin-top:18px">
 <h2>Learn More: Hidden Codes</h2>
 <div id="what-is-gematria">
@@ -195,6 +175,9 @@ document.getElementById("btn-calc").addEventListener("click", onCalc);
 <p class="subtle">Interpretation is always speculative, but numbers often reveal hidden messages behind history and power.</p>
 </div>
 </div>
+
+<script src="extra.js"></script>
+<script src="names.js"></script>
 
 </body>
 </html>
