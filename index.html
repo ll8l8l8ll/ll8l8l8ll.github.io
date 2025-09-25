@@ -94,10 +94,9 @@ function latinToHebrew(src){
   return out;
 }
 
+// ✅ 여기만 수정됨
 function translitAuto(raw){
-  if(!raw) return "";
-  if(isHebrew(raw)) return raw;
-  return latinToHebrew(raw);
+  return window.toHebrewUniversal(raw);
 }
 
 function sumHebrew(hebrew){
