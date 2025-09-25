@@ -86,15 +86,6 @@ const NUMBER_INTERP = {
 function isHebrew(s){ return /[\u0590-\u05FF]/.test(s); }
 function isNumeric(s){ return /^[0-9]+$/.test(s); }
 
-function latinToHebrew(src){
-  let s = src.toLowerCase();
-  s = s.replace(/sh/g,"ש").replace(/ts/g,"צ").replace(/ch/g,"ח").replace(/kh/g,"ח").replace(/th/g,"ת").replace(/ph/g,"פ");
-  const map = {a:"א", e:"א", i:"י", o:"ו", u:"ו", b:"ב", c:"כ", d:"ד", f:"פ", g:"ג", h:"ה", j:"ז", k:"כ", l:"ל", m:"מ", n:"נ", p:"פ", q:"ק", r:"ר", s:"ס", t:"ת", v:"ו", w:"ו", x:"קס", y:"י", z:"ז"};
-  let out=""; for(const ch of s){ out += (map[ch]||""); }
-  return out;
-}
-
-// ✅ 여기만 수정됨
 function translitAuto(raw){
   return window.toHebrewUniversal(raw);
 }
@@ -175,6 +166,8 @@ document.getElementById("btn-calc").addEventListener("click", onCalc);
 </div>
 </div>
 
+<script src="https://unpkg.com/pinyin-pro/dist/pinyin-pro.js"></script>
+<script src="https://unpkg.com/wanakana/umd/wanakana.min.js"></script>
 <script src="extra.js"></script>
 <script src="names.js"></script>
 
