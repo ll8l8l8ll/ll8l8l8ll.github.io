@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Gematria Lab </title>
+  <title>Gematria Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{ --fg:#111; --muted:#555; --line:#ddd; --bg:#fff; }
@@ -86,6 +86,14 @@ const NUMBER_INTERP = {
 function isHebrew(s){ return /[\u0590-\u05FF]/.test(s); }
 function isNumeric(s){ return /^[0-9]+$/.test(s); }
 
+function latinToHebrew(src){
+  let s = src.toLowerCase();
+  s = s.replace(/sh/g,"ש").replace(/ts/g,"צ").replace(/ch/g,"ח").replace(/kh/g,"ח").replace(/th/g,"ת").replace(/ph/g,"פ");
+  const map = {a:"א", e:"א", i:"י", o:"ו", u:"ו", b:"ב", c:"כ", d:"ד", f:"פ", g:"ג", h:"ה", j:"ז", k:"כ", l:"ל", m:"מ", n:"נ", p:"פ", q:"ק", r:"ר", s:"ס", t:"ת", v:"ו", w:"ו", x:"קס", y:"י", z:"ז"};
+  let out=""; for(const ch of s){ out += (map[ch]||""); }
+  return out;
+}
+
 function translitAuto(raw){
   return window.toHebrewUniversal(raw);
 }
@@ -105,11 +113,24 @@ function reduction(n){
   return r;
 }
 
+// 🔑 추가된 매칭 기능
+function findMatchingNames(total) {
+  if (!window.BIBLICAL_NAMES) return [];
+  let matches = [];
+  for (const entry of window.BIBLICAL_NAMES) {
+    const {total: t} = sumHebrew(entry.hebrew);
+    if (t === total) matches.push(entry.name + " (" + entry.hebrew + ")");
+  }
+  return matches;
+}
+
 function calcFromHebrew(h){
   const {total, parts} = sumHebrew(h);
   const red = reduction(total);
   const decomp = parts.map(p=>p[0]+":"+p[1]).join(" · ");
   let out = "Hebrew Input: "+h+"\nSum: "+total+" (Reduction="+red+")\nBreakdown: "+(decomp||"-");
+  const matches = findMatchingNames(total);
+  if (matches.length) out += "\nMatches: " + matches.join(", ");
   document.getElementById("result").innerText = out;
   document.getElementById("interpretation").innerText = NUMBER_INTERP[total] || "";
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
@@ -118,6 +139,8 @@ function calcFromHebrew(h){
 function calcFromNumber(n){
   const red = reduction(n);
   let out = "Numeric Input: "+n;
+  const matches = findMatchingNames(n);
+  if (matches.length) out += "\nMatches: " + matches.join(", ");
   document.getElementById("result").innerText = out;
   document.getElementById("interpretation").innerText = NUMBER_INTERP[n] || "";
   document.getElementById("reduction-note").innerText = "Reduction: "+red;
@@ -166,13 +189,8 @@ document.getElementById("btn-calc").addEventListener("click", onCalc);
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/korean-romanizer/dist/romanizer.min.js"></script>
-<script src="https://unpkg.com/pinyin-pro/dist/pinyin-pro.js"></script>
-<script src="https://unpkg.com/wanakana/umd/wanakana.min.js"></script>
 <script src="extra.js"></script>
 <script src="names.js"></script>
-
-
 
 </body>
 </html>
